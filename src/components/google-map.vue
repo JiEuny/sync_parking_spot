@@ -42,7 +42,8 @@ export default {
               const icon = "http://maps.google.com/mapfiles/ms/icons/pink-dot.png"
               const marker = new google.maps.Marker({ 
                 position,
-                map              
+                map,
+                icon
               });
             });
           }
