@@ -3,7 +3,8 @@
 </template>
 
 <script>
-var datas;
+import axios from 'axios';
+
 export default {
   name: 'google-map',
   props: ['name'],
@@ -13,23 +14,40 @@ export default {
       markerCoordinates: []
     }
   },
-  methods: {
-      getData() {
-        this.$http.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpot', {
-            headers:{
-                "Accept":"application/json",
-                "X-M2M-RI":"12345",
-                "X-M2M-Origin":"SM"
-            }
-        }).then((res) => {
-            console.log(res.data)
-            datas = res.data;
-        })
-      }
-  },
   mounted: function () {
 
-      this.getData()
+    axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpot')
+      .then(res => {
+
+        for (var i=0; i < res.data.length; i++) {
+          this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status} )
+
+        }
+
+        for (var i=0; i < res.data.length; i++) {
+          if ( this.markerCoordinates[i].status == "free" ) {
+            console.log(this.markerCoordinates[i].status)
+            this.markerCoordinates.forEach((coord) => {
+              const position = new google.maps.LatLng(coord.latitude, coord.longitude);
+              const icon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+              const marker = new google.maps.Marker({ 
+                position,
+                map,
+                icon
+              });
+            });
+          } else {
+            this.markerCoordinates.forEach((coord) => {
+              const position = new google.maps.LatLng(coord.latitude, coord.longitude);
+              const icon = "http://maps.google.com/mapfiles/ms/icons/pink-dot.png"
+              const marker = new google.maps.Marker({ 
+                position,
+                map              
+              });
+            });
+          }
+        }
+      }).catch(err => console.log(err));
 
     const element = document.getElementById(this.mapName)
 
@@ -40,14 +58,8 @@ export default {
 
     const map = new google.maps.Map(element, options);
 
-    this.markerCoordinates.push({latitude:37.403739, longitude:127.159999})
-    this.markerCoordinates.forEach((coord) => {
-        const position = new google.maps.LatLng(coord.latitude, coord.longitude);
-        const marker = new google.maps.Marker({ 
-            position,
-            map
-        });
-    });
+    this.markerCoordinates.push({latitude:37.403739, longitude:127.159999, status:"free"})
+   
   }
 };
 </script>
