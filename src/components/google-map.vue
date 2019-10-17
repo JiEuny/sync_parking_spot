@@ -1,5 +1,14 @@
 <template>
-  <div class="google-map" :id="mapName"></div>
+<div>
+  <div class="google-map" :id="mapName"/>
+  <br/>
+    <button v-on:click="refresh">Refresh</button>
+    <br/>
+    <br/>
+    <div class="text-box"><br/>GET http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest
+      <br/><pre>{{response}}</pre><br/></div>
+  </div>
+  
 </template>
 
 <script>
@@ -11,56 +20,73 @@ export default {
   data: function () {
     return {
       mapName: this.name + "-map",
-      markerCoordinates: []
+      markerCoordinates: [],
+      response: ''
     }
   },
-  mounted: function () {
+  methods: {
 
-    axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpot')
-      .then(res => {
-
-        for (var i=0; i < res.data.length; i++) {
-          this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status} )
-
-        }
-
-        for (var i=0; i < res.data.length; i++) {
-          if ( this.markerCoordinates[i].status == "free" ) {
-            console.log(this.markerCoordinates[i].status)
-            this.markerCoordinates.forEach((coord) => {
-              const position = new google.maps.LatLng(coord.latitude, coord.longitude);
-              const icon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-              const marker = new google.maps.Marker({ 
-                position,
-                map,
-                icon
-              });
-            });
-          } else {
-            this.markerCoordinates.forEach((coord) => {
-              const position = new google.maps.LatLng(coord.latitude, coord.longitude);
-              const icon = "http://maps.google.com/mapfiles/ms/icons/pink-dot.png"
-              const marker = new google.maps.Marker({ 
-                position,
-                map,
-                icon
-              });
-            });
+    refresh: function() {
+      axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest')
+        .then(res => {
+          this.response = JSON.stringify(res.data, null, 2);
+          // console.log(res.data)
+          this.markerCoordinates = [];
+          for(var i=2; i<res.data.length; i++) {
+            this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status})
           }
+
+          this.drawMap();
+        })
+    },
+    drawMap: function() {
+      const element = document.getElementById(this.mapName)
+
+      const options = {
+        zoom: 18,
+        center: new google.maps.LatLng(37.403739, 127.159999)
+      }
+
+      const map = new google.maps.Map(element, options);
+
+      for (var i=0; i < this.markerCoordinates.length; i++) {
+        if ( this.markerCoordinates[i].status == 'free' ) {
+
+          const position = new google.maps.LatLng(this.markerCoordinates[i].latitude, this.markerCoordinates[i].longitude);
+          const icon = "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+          const marker = new google.maps.Marker({ 
+            position,
+            map,
+            icon
+          });
+        } else {
+          const position = new google.maps.LatLng(this.markerCoordinates[i].latitude, this.markerCoordinates[i].longitude);
+          const icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          const marker = new google.maps.Marker({ 
+            position,
+            map,
+            icon
+          });
         }
-      }).catch(err => console.log(err));
-
-    const element = document.getElementById(this.mapName)
-
-    const options = {
-      zoom: 18,
-      center: new google.maps.LatLng(37.403739, 127.159999)
+      }
     }
 
-    const map = new google.maps.Map(element, options);
+  },
+  
+  mounted: function () {
 
-    this.markerCoordinates.push({latitude:37.403739, longitude:127.159999, status:"free"})
-   
+    axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest') 
+      .then(res => {
+        this.markerCoordinates = [];
+        this.response = res.data;
+        for(var i=2; i<res.data.length; i++) {
+          this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status})
+        }
+
+        this.drawMap();
+
+      })
+
   }
 };
 </script>
@@ -71,5 +97,12 @@ export default {
   height: 600px;
   margin: 0 auto;
   background: gray;
+}
+
+.text-box {
+  width: 800px;
+  margin: 0 auto;
+  text-align: left;
+  background:whitesmoke ;
 }
 </style>
