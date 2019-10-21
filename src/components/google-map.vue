@@ -6,7 +6,8 @@
     <br/>
     <br/>
     <div class="text-box"><br/>GET http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest
-      <br/><pre>{{response}}</pre><br/></div>
+      <br/><br/>Response:
+      <pre>{{response}}</pre><br/></div>
   </div>
   
 </template>
