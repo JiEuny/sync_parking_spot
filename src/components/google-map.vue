@@ -5,7 +5,7 @@
     <button v-on:click="refresh">Refresh</button>
     <br/>
     <br/>
-    <div class="text-box"><br/>GET http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest
+    <div class="text-box"><br/>GET {{urls}}
       <br/><br/>Response:
       <pre>{{response}}</pre><br/></div>
   </div>
@@ -14,6 +14,7 @@
 
 <script>
 import axios from 'axios';
+var url = 'http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpot';
 
 export default {
   name: 'google-map',
@@ -22,18 +23,19 @@ export default {
     return {
       mapName: this.name + "-map",
       markerCoordinates: [],
-      response: ''
+      response: '',
+      urls: ''
     }
   },
   methods: {
 
     refresh: function() {
-      axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest')
+      axios.get(url)
         .then(res => {
           this.response = JSON.stringify(res.data, null, 2);
           // console.log(res.data)
           this.markerCoordinates = [];
-          for(var i=2; i<res.data.length; i++) {
+          for(var i=0; i<res.data.length; i++) {
             this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status})
           }
 
@@ -45,7 +47,7 @@ export default {
 
       const options = {
         zoom: 18,
-        center: new google.maps.LatLng(37.403739, 127.159999)
+        center: new google.maps.LatLng(37.411161, 127.129544)
       }
 
       const map = new google.maps.Map(element, options);
@@ -75,12 +77,13 @@ export default {
   },
   
   mounted: function () {
+    this.urls = url;
 
-    axios.get('http://203.253.128.164:1026/v2/entities?options=keyValues&type=ParkingSpotTest') 
+    axios.get(url) 
       .then(res => {
         this.markerCoordinates = [];
         this.response = res.data;
-        for(var i=2; i<res.data.length; i++) {
+        for(var i=0; i<res.data.length; i++) {
           this.markerCoordinates.push({latitude:res.data[i].location.coordinates[1], longitude:res.data[i].location.coordinates[0], status:res.data[i].status})
         }
 
